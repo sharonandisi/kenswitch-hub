@@ -31,7 +31,7 @@ CREATED → ROUTED → PRESENTED → PENDING → ACCEPTED (or DECLINED / EXPIRED
 
 A few rules that matter operationally:
 
-- **You have up to 7 days** to act on a request before it expires automatically.
+- **You have up to 30 seconds** to act on a request before it expires automatically.
 - **Once you approve it, it's final** at the messaging layer — Kenswitch has no "undo" or chargeback mechanism from that point. Anything that needs reversing after approval is a bank-to-bank/merchant conversation, not a Kenswitch one. See [Legal & Compliance](legal-compliance.md) for exactly how that's handled.
 - **Banks must acknowledge a request within 5 seconds**, or the transaction fails and the Acquirer can safely retry it using the same reference (no duplicate risk, by design).
 - Status/decision updates going back to the Acquirer are authenticated using a **signed callback** (HMAC-SHA256) — this is just a cryptographic signature that proves the message genuinely came from the bank it claims to, so nobody can fake a "payment approved" notification.
