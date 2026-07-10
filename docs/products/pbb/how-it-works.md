@@ -9,6 +9,28 @@
 5. If approved, your bank actually moves the money. Kenswitch doesn't touch the funds at any point — it only carries the messages.
 6. At the end of the day, all banks/PSPs on the platform settle what they owe each other through the Central Bank's real-time settlement system (**KEPSS**), and everyone gets a reconciliation report.
 
+```mermaid
+sequenceDiagram
+    participant C as Customer
+    participant I as Issuer (your bank)
+    participant K as Kenswitch
+    participant A as Acquirer (merchant's bank/PSP)
+    participant M as Merchant / M-Pesa
+
+    M->>A: "Collect KES X from customer"
+    A->>K: Payment request
+    K->>I: Routes & validates request
+    I->>C: "Approve payment of KES X to [merchant]?"
+    C-->>I: Approve / Decline / (no response)
+    I->>K: Sends decision
+    K->>A: Routes decision back
+    alt Approved
+        I->>I: Moves the money (customer's account)
+        Note over K: Kenswitch never touches funds — messages only
+    end
+    Note over I,A: End of day — all participants settle net positions via KEPSS
+```
+
 That's the whole shape of it. Everything below is the same flow, described the way the technical spec and rulebook describe it — useful once someone needs to actually build or debug against it.
 
 ## The technical version (same flow, formal names)
@@ -25,15 +47,30 @@ Each message carries a **Business Application Header (BAH)** — think of it as 
 
 ### The lifecycle a request moves through
 
-```
-CREATED → ROUTED → PRESENTED → PENDING → ACCEPTED (or DECLINED / EXPIRED / CANCELLED) → EXECUTED → SETTLED
+```mermaid
+stateDiagram-v2
+    [*] --> CREATED
+    CREATED --> ROUTED
+    ROUTED --> PRESENTED
+    PRESENTED --> PENDING
+    PENDING --> ACCEPTED : Payer approves
+    PENDING --> DECLINED : Payer declines
+    PENDING --> EXPIRED : No response within 7 days
+    PENDING --> CANCELLED : Acquirer cancels (pain.017)
+    ACCEPTED --> EXECUTED
+    EXECUTED --> SETTLED : Daily KEPSS settlement cycle
+    DECLINED --> [*]
+    EXPIRED --> [*]
+    CANCELLED --> [*]
+    SETTLED --> [*]
 ```
 
 A few rules that matter operationally:
 
-- **You have up to 30 seconds** to act on a request before it expires automatically.
+- **You have up to 7 days** to act on a request before it expires automatically.
 - **Once you approve it, it's final** at the messaging layer — Kenswitch has no "undo" or chargeback mechanism from that point. Anything that needs reversing after approval is a bank-to-bank/merchant conversation, not a Kenswitch one. See [Legal & Compliance](legal-compliance.md) for exactly how that's handled.
 - **Banks must acknowledge a request within 5 seconds**, or the transaction fails and the Acquirer can safely retry it using the same reference (no duplicate risk, by design).
+- **The customer typically has around 30 seconds to respond to the in-app prompt** before that specific prompt times out — this isn't in the current technical spec, so it's worth confirming with Marvin/the Issuer team exactly how it relates to the 7-day request validity window (e.g. does the prompt simply re-trigger, or does timing out here have its own downstream effect?).
 - Status/decision updates going back to the Acquirer are authenticated using a **signed callback** (HMAC-SHA256) — this is just a cryptographic signature that proves the message genuinely came from the bank it claims to, so nobody can fake a "payment approved" notification.
 
 ## Where the money actually moves
