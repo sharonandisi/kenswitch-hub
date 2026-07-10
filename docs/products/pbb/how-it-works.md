@@ -9,7 +9,7 @@
 5. If approved, your bank actually moves the money. Kenswitch doesn't touch the funds at any point — it only carries the messages.
 6. At the end of the day, all banks/PSPs on the platform settle what they owe each other through the Central Bank's real-time settlement system (**KEPSS**), and everyone gets a reconciliation report.
 
-```mermaid
+``` mermaid
 sequenceDiagram
     participant C as Customer
     participant I as Issuer (your bank)
@@ -47,7 +47,7 @@ Each message carries a **Business Application Header (BAH)** — think of it as 
 
 ### The lifecycle a request moves through
 
-```mermaid
+``` mermaid
 stateDiagram-v2
     [*] --> CREATED
     CREATED --> ROUTED
