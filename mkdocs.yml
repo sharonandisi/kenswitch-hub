@@ -1,0 +1,49 @@
+site_name: Kenswitch Knowledge Hub
+site_description: A living guide to every Kenswitch product — what it does, how it works, and how it makes money.
+repo_url: https://github.com/YOUR-ORG/kenswitch-hub  # update once you create the repo
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - content.action.edit
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Glossary: glossary/index.md
+  - Products:
+      - PBB (Pay by Bank):
+          - Getting Started: products/pbb/getting-started.md
+          - How It Works: products/pbb/how-it-works.md
+          - Dependencies: products/pbb/dependencies.md
+          - Use Cases: products/pbb/use-cases.md
+          - Commercials: products/pbb/commercials.md
+          - Legal & Compliance: products/pbb/legal-compliance.md
+          - FAQ: products/pbb/faq.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+
+plugins:
+  - search
